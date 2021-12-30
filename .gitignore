@@ -33,3 +33,7 @@ lerna-debug.log*
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.jsonsendgrid.env
+
+#crt key
+*.crt
+*.key

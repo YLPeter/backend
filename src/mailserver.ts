@@ -33,9 +33,9 @@ function wirteHTMLfile(str_to_write) {
 function test_with_handlers_as_options() {
   const options: SMTPServerOptions = {
     // secure: true,
-    key: fs.readFileSync('SMTPserver.key'),
-    cert: fs.readFileSync('SMTPserver.crt'),
-    // hideSTARTTLS: true,
+    key: fs.readFileSync('./SMTPserver.key'),
+    cert: fs.readFileSync('./SMTPserver.crt'),
+    hideSTARTTLS: true,
     authOptional: true,
     onAuth,
     onConnect,
@@ -140,8 +140,10 @@ function test_with_handlers_as_options() {
       }
 
       console.log(`data,type:[${data.type}]`);
-      console.log(data.html);
-      wirteHTMLfile(data.html);
+      if (data.html) {
+        console.log(data.html);
+        wirteHTMLfile(data.html);
+      }
     });
     mailparser.on('end', () => {
       console.log('MailParser subject', subject);

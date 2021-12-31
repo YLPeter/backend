@@ -35,7 +35,7 @@ function test_with_handlers_as_options() {
     // secure: true,
     key: fs.readFileSync('./SMTPserver.key'),
     cert: fs.readFileSync('./SMTPserver.crt'),
-    hideSTARTTLS: true,
+    // hideSTARTTLS: true,
     authOptional: true,
     onAuth,
     onConnect,
@@ -45,7 +45,7 @@ function test_with_handlers_as_options() {
     onClose,
   };
 
-  const port = 25; //995 ;//110 ;//993 ;//143 ;//587;//25,2525,465
+  const port = 2525; //995 ;//110 ;//993 ;//143 ;//587;//25,2525,465
   console.log('mail server,', port);
   function onConnect(
     session: SMTPServerSession,

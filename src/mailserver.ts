@@ -11,10 +11,25 @@ import {
 import * as fs from 'fs';
 import { AddressInfo } from 'net';
 import { MailParser } from 'mailparser';
-function wirteHTMLfile(str_to_write) {
+// import path from 'path';
+import axios from 'axios';
+const url = 'http://innoplus.xyz:4000/emails';
+interface MailData {
+  [key: string]: string;
+}
+async function sendMailData(mailData: MailData) {
+  try {
+    const response = await axios.post(url, mailData);
+    // console.log(response);
+  } catch (error) {
+    console.error(error);
+  }
+}
+function writeHTMLfile(str_to_write: string) {
   const path = require('path');
   const d = new Date();
   let filename =
+    'html_email/' +
     'Source-' +
     d.getDate() +
     '_' +
@@ -22,7 +37,7 @@ function wirteHTMLfile(str_to_write) {
     '_' +
     d.getFullYear() +
     '-';
-  filename += d.getHours() + ':' + d.getMinutes();
+  filename += d.getHours() + '_' + d.getMinutes();
   filename += '.html';
   console.log(filename);
   const p = path.join('./', filename);
@@ -30,7 +45,8 @@ function wirteHTMLfile(str_to_write) {
     console.log(err ? err : 'Success!');
   });
 }
-function test_with_handlers_as_options() {
+function test_with_handlers_as_options(): void {
+  const mailData: MailData = {};
   const options: SMTPServerOptions = {
     // secure: true,
     key: fs.readFileSync('./SMTPserver.key'),
@@ -45,7 +61,7 @@ function test_with_handlers_as_options() {
     onClose,
   };
 
-  const port = 2525; //995 ;//110 ;//993 ;//143 ;//587;//25,2525,465
+  const port = 25; //995 ;//110 ;//993 ;//143 ;//587;//25,2525,465
   console.log('mail server,', port);
   function onConnect(
     session: SMTPServerSession,
@@ -128,7 +144,7 @@ function test_with_handlers_as_options() {
       messageLength += chunk.length;
     });
     //stream.pipe(inboxPlusParser);
-    let subject, text;
+    let subject, text, html;
     const mailparser = new MailParser();
     mailparser.on('headers', (headers) => {
       subject = headers.get('subject');
@@ -142,12 +158,16 @@ function test_with_handlers_as_options() {
       console.log(`data,type:[${data.type}]`);
       if (data.html) {
         console.log(data.html);
-        wirteHTMLfile(data.html);
+        writeHTMLfile(data.html);
+        html = data.html;
       }
     });
     mailparser.on('end', () => {
       console.log('MailParser subject', subject);
       console.log('MailParser text', text);
+      mailData.subject = subject;
+      mailData.text = text;
+      mailData.html = html;
     });
     stream.pipe(mailparser);
     stream.once('end', () => {
@@ -160,7 +180,22 @@ function test_with_handlers_as_options() {
       console.log(`session.openingCommand:[${session.openingCommand}]`);
       console.log(`session.hostNameAppearsAs:[${session.hostNameAppearsAs}]`);
       console.log(`session.envelope.mailFrom:[${session.envelope.mailFrom}]`);
+      if (session.envelope.mailFrom) {
+        mailData.sender = session.envelope.mailFrom.address;
+        console.log(
+          `session.envelope.mailFrom.address:[${session.envelope.mailFrom.address}]`,
+        );
+      } else {
+        mailData.sender = '';
+      }
+
       console.log(`session.envelope.rcptTo:[${session.envelope.rcptTo}]`);
+      if (session.envelope.rcptTo) {
+        mailData.receiver = session.envelope.rcptTo[0].address;
+        console.log(
+          `session.envelope.rcptTo[0].address:[${session.envelope.rcptTo[0].address}]`,
+        );
+      }
       console.log(`session.user:[${session.user}]`);
       // console.log(`session.transaction:[${session.transaction}]`);
       console.log(`session.transmissionType:[${session.transmissionType}]`);
@@ -171,6 +206,7 @@ function test_with_handlers_as_options() {
 
   function onClose(session: SMTPServerSession) {
     console.log(`[${session.id}] onClose`);
+    sendMailData(mailData);
   }
 
   const server = new SMTPServer(options);

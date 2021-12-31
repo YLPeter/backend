@@ -1,12 +1,10 @@
+import { IsNotEmpty, IsNumber, IsNumberString } from 'class-validator';
 
-import {IsNotEmpty, IsNumber, IsNumberString} from 'class-validator';
+export class CreateTaskDto {
+  @IsNotEmpty()
+  title: string;
 
-
-export class CreateTaskDto{
-    @IsNotEmpty()
-    title:string;
-    
-    @IsNotEmpty()
-    @IsNumberString()
-    sequenceNo:BigInteger;
+  @IsNotEmpty()
+  @IsNumberString()
+  sequenceNo: BigInteger;
 }
